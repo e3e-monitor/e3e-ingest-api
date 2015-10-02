@@ -1,6 +1,7 @@
 import flask
 import json
 import ConfigParser
+from datetime import datetime, date, time
 from elasticsearch import Elasticsearch
 from elasticsearch.client import IndicesClient
 
@@ -24,7 +25,9 @@ def is_json(myjson):
 def store_json(blob):
   try:
     print blob
-    es.index(index='test', doc_type='explosion', body=json.loads(blob))
+    data = json.loads(blob)
+    data['timestamp'] = datetime.fromtimestamp(data['timestamp'])
+    es.index(index='e3e', doc_type='event', body=data)
     return json.dumps({'ok' : True})
   except Exception, e:
     print "unable to save in elasticsearch"
@@ -51,7 +54,6 @@ def event():
   except Exception, e:
     print e
     return json.dumps({'ok' : False})
-    
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0')
