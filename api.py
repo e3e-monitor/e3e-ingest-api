@@ -23,9 +23,11 @@ def is_json(myjson):
 
 def store_json(blob):
   try:
+    print blob
     es.index(index='test', doc_type='explosion', body=json.loads(blob))
     return json.dumps({'ok' : True})
   except Exception, e:
+    print "unable to save in elasticsearch"
     print e
     return json.dumps({'ok' : False}, 500)
 
@@ -39,12 +41,10 @@ def statuscheck():
 def event():
   try:
     if flask.request.method == "POST":
-      for blob in flask.request.get_json():
-        if is_json(blob):
-          store_json(blob)
-        else:
-          return json.dumps({'ok' : False, 'error' : 'Invalid JSON'})
-    
+      # print flask.request.get_json()
+      # print type(flask.request.get_json())
+      # print json.loads(flask.request.get_json())
+      store_json(flask.request.get_json())
       return json.dumps({'ok' : True})
     else:
       return json.dumps({'ok' : False, 'error' : 'only post requests are allowed to this endpoint'})
