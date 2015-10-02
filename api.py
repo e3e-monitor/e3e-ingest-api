@@ -22,7 +22,12 @@ def is_json(myjson):
   return True
 
 def store_json(blob):
-  es.index(index='test', doc_type='explosion', body=json.loads(blob))
+  try:
+    es.index(index='test', doc_type='explosion', body=json.loads(blob))
+    return json.dumps({'ok' : True})
+  except Exception, e:
+    print e
+    return json.dumps({'ok' : False}, 500)
 
 # /statuscheck
 @app.route('/statuscheck')
