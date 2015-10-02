@@ -39,12 +39,7 @@ def statuscheck():
 def event():
   try:
     if flask.request.method == "POST":
-      data = None
-      if flask.request.form == {}:
-        data = flask.request.data
-      else:
-        data = flask.request.form
-      for blob in data:
+      for blob in flask.request.get_json():
         if is_json(blob):
           store_json(blob)
         else:
