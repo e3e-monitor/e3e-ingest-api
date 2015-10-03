@@ -37,6 +37,10 @@ def store_json(blob):
 def get_events(minT, maxT):
   raise "must be implemented"
 
+@app.route('/')
+def root():
+  return app.send_static_file('index.html')
+  
 # /statuscheck
 @app.route('/statuscheck')
 def statuscheck():
