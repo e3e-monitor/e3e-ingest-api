@@ -74,7 +74,7 @@ function stateChanged() {
       removeMarkers();
       for (i=0;i<plotlist.length;i++) {
         var plotll = new L.LatLng(plotlist[i].location.lat,plotlist[i].location.lon, true);
-        var plotCircle = L.circle(plotll, 500, {color: 'red', fillColor: '#f03', fillOpacity: 0.5})
+        var plotCircle = L.circle(plotll, plotlist[i].size*3, {color: 'red', fillColor: '#f03', fillOpacity: 0.5})
         // var plotmark = new L.Marker(plotll);
         // plotmark.data=plotlist[i];
         map.addLayer(plotCircle);
