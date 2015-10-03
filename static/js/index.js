@@ -69,22 +69,23 @@ function stateChanged() {
   if (ajaxRequest.readyState==4) {
     //use the info here that was returned
     if (ajaxRequest.status==200) {
-      plotlist=eval("(" + ajaxRequest.responseText + ")");
+      plotlist=eval("(" + ajaxRequest.responseText + ")").events;
       console.log(plotlist)
       removeMarkers();
       for (i=0;i<plotlist.length;i++) {
-        L.circle([plotlist[i].location.lat, plotlist[i].location.lon], {color: 'red', fillColor: '#f03', fillOpacity: 0.5})
-        // var plotll = new L.LatLng(plotlist[i].location.lat,plotlist[i].location.lon, true);
+        var plotll = new L.LatLng(plotlist[i].location.lat,plotlist[i].location.lon, true);
+        var plotCircle = L.circle(plotll, 500, {color: 'red', fillColor: '#f03', fillOpacity: 0.5})
         // var plotmark = new L.Marker(plotll);
         // plotmark.data=plotlist[i];
-        // map.addLayer(plotmark);
-        plotmark.bindPopup("<h3>"+plotlist[i].time+"</h3>"+
+        map.addLayer(plotCircle);
+        plotCircle.bindPopup("<h3>"+plotlist[i].time+"</h3>"+
           "<p> <b>Lat, Lon: </b>"+plotlist[i].location.lat+","+plotlist[i].location.lon+"</p>"+
           "<p> <b>Altitude: </b>"+plotlist[i].altitude+"</p>"+
           "<p> <b>Size: </b>"+plotlist[i].size+"</p>"+
           "<p> <b>Confidence: </b>"+plotlist[i].confidence+"</p>");
-        plotlayers.push(plotmark);
+        plotlayers.push(plotCircle);
       }
+      console.log('done plotting all the things')
     }
   }
 }
