@@ -67,7 +67,7 @@ def events():
   try:
     if flask.request.method == "GET":
       get_events(minT, maxT)
-      return json.dumps({'ok' : True})
+      return json.dumps({'events' : {"test" : "1"}})
     else:
       return json.dumps({'ok' : False, 'error' : 'only get requests are allowed to this endpoint'})
   except Exception, e:
