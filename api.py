@@ -26,13 +26,16 @@ def store_json(blob):
   try:
     print blob
     data = json.loads(blob)
-    data['timestamp'] = datetime.fromtimestamp(data['timestamp'])
+    data['timestamp'] = datetime.fromtimestamp(int(data['timestamp']))
     es.index(index='e3e', doc_type='event', body=data)
     return json.dumps({'ok' : True})
   except Exception, e:
     print "unable to save in elasticsearch"
     print e
     return json.dumps({'ok' : False}, 500)
+
+def get_events(minT, maxT):
+  raise "must be implemented"
 
 # /statuscheck
 @app.route('/statuscheck')
@@ -51,6 +54,18 @@ def event():
       return json.dumps({'ok' : True})
     else:
       return json.dumps({'ok' : False, 'error' : 'only post requests are allowed to this endpoint'})
+  except Exception, e:
+    print e
+    return json.dumps({'ok' : False})
+
+@app.route('/events', methods=['GET'])
+def events():
+  try:
+    if flask.request.method == "GET":
+      get_events(minT, maxT)
+      return json.dumps({'ok' : True})
+    else:
+      return json.dumps({'ok' : False, 'error' : 'only get requests are allowed to this endpoint'})
   except Exception, e:
     print e
     return json.dumps({'ok' : False})
