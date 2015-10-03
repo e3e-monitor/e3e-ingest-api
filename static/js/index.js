@@ -102,5 +102,5 @@ function onMapMove(e) { askForPlots(); }
 app = {
   initialize: function(){
     initmap()
- }
+  }
 }
