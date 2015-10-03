@@ -1,5 +1,6 @@
 import flask
 import json
+import calendar
 import ConfigParser
 from datetime import datetime, date, time
 from elasticsearch import Elasticsearch
@@ -34,8 +35,36 @@ def store_json(blob):
     print e
     return json.dumps({'ok' : False}, 500)
 
-def get_events(minT, maxT):
-  raise "must be implemented"
+def extract_data(hit):
+  return  hit["_source"]
+
+def build_es_query(minLat, minLon, maxLat, maxLon):
+  query = {
+    "query": {
+      "filtered" : {
+        "query" : {
+          "match_all" : {}
+        },
+        "filter" : {
+          "geo_bounding_box" : {
+            "location" : {
+              "bottom_left" : {
+                "lat" : str(minLat),
+                "lon" : str(minLon)
+              },
+              "top_right" : {
+                "lat" : str(maxLat),
+                "lon" : str(maxLon)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  print query
+  return query
+
 
 @app.route('/')
 def root():
@@ -66,8 +95,26 @@ def event():
 def events():
   try:
     if flask.request.method == "GET":
-      get_events(minT, maxT)
-      return json.dumps({'events' : {"test" : "1"}})
+      args = flask.request.args
+      print args
+      minLat = args["minlat"]
+      maxLat = args["maxlat"]
+      minLon = args["minlon"]
+      maxLon = args["maxlon"]
+      minT = 0
+      maxT = calendar.timegm(datetime.now().utctimetuple())
+      if "minT" in args:
+        minT = args["minT"]
+      if "maxT" in args:
+        maxT = args["maxT"]
+
+      query = build_es_query(minLat, minLon, maxLat, maxLon)
+      res = es.search(index="e3e", doc_type="event", body=query, size=1000)
+      hits = res["hits"]["hits"]
+      rowList = []
+      if len(hits) > 0:
+        rowList = map(extract_data, hits)
+      return json.dumps({'events' : rowList})
     else:
       return json.dumps({'ok' : False, 'error' : 'only get requests are allowed to this endpoint'})
   except Exception, e:
