@@ -53,7 +53,6 @@ function askForPlots() {
   ajaxRequest.open('GET', msg, true);
   ajaxRequest.send(null);
 }
-
 function stateChanged() {
   console.log( "State has changed.");
   console.log( "AJAX ready state: " + ajaxRequest.readyState)
@@ -74,11 +73,8 @@ function stateChanged() {
         // var plotmark = new L.Marker(plotll);
         // plotmark.data=plotlist[i];
         map.addLayer(plotCircle);
-        plotCircle.bindPopup("<h3>"+plotlist[i].time+"</h3>"+
-          "<p> <b>Lat, Lon: </b>"+plotlist[i].location.lat+","+plotlist[i].location.lon+"</p>"+
-          "<p> <b>Altitude: </b>"+plotlist[i].altitude+"</p>"+
-          "<p> <b>Size: </b>"+plotlist[i].size+"</p>"+
-          "<p> <b>Confidence: </b>"+plotlist[i].confidence+"</p>");
+        var popup = pickPopup(plotlist[i]);
+        plotCircle.bindPopup(popup);
         plotlayers.push(plotCircle);
       }
     }
@@ -94,11 +90,35 @@ function removeMarkers() {
 
 function onMapMove(e) { askForPlots(); }
 
+function pickPopup(obj) {
+  if(obj.type == "event" || obj.type == "simulated_event"){
+    return "<h3>"+obj.type+"</h3>"+
+    "<p> <b>Lat, Lon: </b>"+plotlist[i].location.lat+","+plotlist[i].location.lon+"</p>"+
+    "<p> <b>Size: </b>"+plotlist[i].size+"</p>"+
+    "<p> <b>Confidence: </b>"+plotlist[i].confidence+"</p>"
+  } else if ( obj.type == "kobane") {
+    return "<h3>Externally Observed Explosion</h3>"+
+    "<p> <b>Damage: </b>"+plotlist[i].damage+"</p>"+
+    "<p> <b>Confidence: </b>"+plotlist[i].confidence+"</p>"+
+    "<p> <b>Validation: </b>"+plotlist[i].valid+"</p>"
+  } else if ( obj.type == "refugeecamp") {
+    return "<h3>Refugee Camp</h3>"+
+    "<p> <b>Name: </b>"+plotlist[i].name+"</p>"+
+    "<p> <b>Designation: </b>"+plotlist[i].designation+"</p>"+
+    "<p> <b>Lat, Lon: </b>"+plotlist[i].location.lat+","+plotlist[i].location.lon+"</p>"
+  } else {
+    return "<h3>"+plotlist[i].time+"</h3>"+
+    "<p> <b>Lat, Lon: </b>"+plotlist[i].location.lat+","+plotlist[i].location.lon+"</p>"
+  }
+}
+
 function pickSize(obj) {
   if(obj.type == "event" || obj.type == "simulated_event"){
     return obj.size*3
   } else if ( obj.type == "kobane") {
     return 50
+  } else {
+    return 80
   }
 }
 
@@ -110,7 +130,8 @@ function pickColor(obj) {
   } else if ( obj.type == "simulated_event") {
     return ["#944DDB", "#7519D1"]
   } else {
-    return '#000'
+    console.log(obj)
+    return ['#0f0', '#0f3']
   }
 }
 app = {

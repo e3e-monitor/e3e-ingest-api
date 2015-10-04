@@ -70,7 +70,7 @@ def build_e3e_event_query(minLat, minLon, maxLat, maxLon):
 
 
 def es_lookup(index, typ, query):
-  res = es.search(index=index, doc_type=typ, body=query, size=1000)
+  res = es.search(index=index, doc_type=typ, body=query, size=400)
   hits = res["hits"]["hits"]
   rowList = []
   if len(hits) > 0:
@@ -110,6 +110,21 @@ def event():
       # print type(flask.request.get_json())
       # print json.loads(flask.request.get_json())
       store_json(flask.request.get_json(), "event")
+      return json.dumps({'ok' : True})
+    else:
+      return json.dumps({'ok' : False, 'error' : 'only post requests are allowed to this endpoint'})
+  except Exception, e:
+    print e
+    return json.dumps({'ok' : False})
+
+@app.route('/reading', methods=['POST'])
+def reading():
+  try:
+    if flask.request.method == "POST":
+      # print flask.request.get_json()
+      # print type(flask.request.get_json())
+      # print json.loads(flask.request.get_json())
+      store_json(flask.request.get_json(), "reading")
       return json.dumps({'ok' : True})
     else:
       return json.dumps({'ok' : False, 'error' : 'only post requests are allowed to this endpoint'})
@@ -165,7 +180,7 @@ def all_data():
         maxT = args["maxT"]
 
       query = build_e3e_event_query(minLat, minLon, maxLat, maxLon)
-      rowList = es_lookup("e3e", "event", query) + es_lookup("e3e", "simulated_event", query) + es_lookup("external", "kobane", query)
+      rowList = es_lookup("e3e", "event", query) + es_lookup("e3e", "simulated_event", query) + es_lookup("external", "kobane", query) + es_lookup("refugee", "refugeecamp", query)
       # the query is the same for both e3e and kobane data
       return json.dumps({'events' : rowList})
     else:
