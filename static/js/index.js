@@ -26,12 +26,6 @@ function initmap() {
   map.setView([46.233809, 6.055767], 13)
   map.addLayer(osm)
 
-  L.circle([46.233, 6.055], 500, {
-    color: 'red',
-    fillColor: '#f03',
-    fillOpacity: 0.5
-  }).addTo(map).bindPopup("I am a circle.");
-  
   // Plotting pins
   askForPlots();
   map.on('moveend', onMapMove);
@@ -54,16 +48,16 @@ function askForPlots() {
   var bounds = map.getBounds();
   var minll = bounds.getSouthWest();
   var maxll = bounds.getNorthEast();
-  var msg = '/events?minlon='+minll.lng+'&minlat='+minll.lat+'&maxlon='+maxll.lng+'&maxlat='+maxll.lat;
+  var msg = '/all?minlon='+minll.lng+'&minlat='+minll.lat+'&maxlon='+maxll.lng+'&maxlat='+maxll.lat;
   ajaxRequest.onreadystatechange = stateChanged;
   ajaxRequest.open('GET', msg, true);
   ajaxRequest.send(null);
 }
 
 function stateChanged() {
-    console.log( "State has changed.");
-    console.log( "AJAX ready state: " + ajaxRequest.readyState)
-    console.log( "AJAX status: " + ajaxRequest.status)
+  console.log( "State has changed.");
+  console.log( "AJAX ready state: " + ajaxRequest.readyState)
+  console.log( "AJAX status: " + ajaxRequest.status)
   // console.log( "Response: " + ajaxRequest.responseText)
   // if AJAX returned a list of markers, add them to the map
   if (ajaxRequest.readyState==4) {
@@ -74,7 +68,9 @@ function stateChanged() {
       removeMarkers();
       for (i=0;i<plotlist.length;i++) {
         var plotll = new L.LatLng(plotlist[i].location.lat,plotlist[i].location.lon, true);
-        var plotCircle = L.circle(plotll, plotlist[i].size*3, {color: 'red', fillColor: '#f03', fillOpacity: 0.5})
+        var size = pickSize(plotlist[i])
+        var color = pickColor(plotlist[i])
+        var plotCircle = L.circle(plotll, size, {color: color[0], fillColor: color[1], fillOpacity: 0.5})
         // var plotmark = new L.Marker(plotll);
         // plotmark.data=plotlist[i];
         map.addLayer(plotCircle);
@@ -85,7 +81,6 @@ function stateChanged() {
           "<p> <b>Confidence: </b>"+plotlist[i].confidence+"</p>");
         plotlayers.push(plotCircle);
       }
-      console.log('done plotting all the things')
     }
   }
 }
@@ -99,6 +94,25 @@ function removeMarkers() {
 
 function onMapMove(e) { askForPlots(); }
 
+function pickSize(obj) {
+  if(obj.type == "event" || obj.type == "simulated_event"){
+    return obj.size*3
+  } else if ( obj.type == "kobane") {
+    return 50
+  }
+}
+
+function pickColor(obj) {
+  if(obj.type == "event"){
+    return ['#f00', '#f03']
+  } else if ( obj.type == "kobane") {
+    return ["#FFA319", '#f90']
+  } else if ( obj.type == "simulated_event") {
+    return ["#944DDB", "#7519D1"]
+  } else {
+    return '#000'
+  }
+}
 app = {
   initialize: function(){
     initmap()
