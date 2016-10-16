@@ -18,7 +18,7 @@ function initmap() {
   // var map = new L.Map('map');
 
   // create the tile layer with correct attribution
-  var osmUrl="https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6IjZjNmRjNzk3ZmE2MTcwOTEwMGY0MzU3YjUzOWFmNWZhIn0.Y8bhBaUMqFiPrDRW9hieoQ";
+  var osmUrl="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
   var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
   var osm = L.tileLayer(osmUrl, { maxZoom: 18, attribution: osmAttrib, id: 'mapbox.streets'})
 
