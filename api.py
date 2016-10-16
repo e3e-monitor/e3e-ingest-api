@@ -6,9 +6,11 @@ from datetime import datetime, date, time
 from elasticsearch import Elasticsearch
 from elasticsearch.client import IndicesClient
 
+# Flask boilerplate
 app = flask.Flask(__name__, static_url_path='')
 app.config['DEBUG'] = True
 
+# Configuration & elasticsearch boilerplate
 parser = ConfigParser.ConfigParser()
 parser.read('config.ini')
 es_host = parser.get('es', 'host')
@@ -16,6 +18,7 @@ es_port = parser.get('es', 'port')
 
 es = Elasticsearch(host=es_host, port=es_port)
 
+# test whether json is valid
 def is_json(myjson):
   try:
     json_object = json.loads(myjson)
@@ -23,6 +26,7 @@ def is_json(myjson):
     return False
   return True
 
+# store the json in Elasticsearch. Stores the data in an index named "e3e"
 def store_json(blob, index):
   try:
     print blob
@@ -35,12 +39,14 @@ def store_json(blob, index):
     print e
     return json.dumps({'ok' : False}, 500)
 
+# this parses the data that is returned from Elasticsearch
 def extract_data(hit):
   t = hit["_type"]
   x = hit["_source"]
   x["type"] = t
   return x
 
+# Creates an Elasticsearch query for points within a bounding box
 def build_e3e_event_query(minLat, minLon, maxLat, maxLon):
   query = {
     "query": {
@@ -69,6 +75,7 @@ def build_e3e_event_query(minLat, minLon, maxLat, maxLon):
   return query
 
 
+# This functtion just abstracts away some of the Elasticsearch query boilerplate
 def es_lookup(index, typ, query):
   res = es.search(index=index, doc_type=typ, body=query, size=400)
   hits = res["hits"]["hits"]
@@ -77,16 +84,19 @@ def es_lookup(index, typ, query):
     rowList = map(extract_data, hits)
   return rowList
 
+# The root route. This just returns the "index.html" file
 @app.route('/')
 def root():
   return app.send_static_file('index.html')
   
-# /statuscheck
+# This is a "sanity check" endpoint. if you can hit this endpoint, then that
+# means that the API is running
 @app.route('/statuscheck')
 def statuscheck():
   json_results = {'ok' : True}
   return json.dumps(json_results)
 
+# POST data to this endoint to store it in Elasticsearch
 @app.route('/simulated_event', methods=['POST'])
 def simulated_event():
   try:
@@ -102,6 +112,8 @@ def simulated_event():
     print e
     return json.dumps({'ok' : False})
 
+# POST data to this endoint to store it in Elasticsearch
+# Same as /simulated_event
 @app.route('/event', methods=['POST'])
 def event():
   try:
@@ -117,6 +129,8 @@ def event():
     print e
     return json.dumps({'ok' : False})
 
+# POST data to this endoint to store it in Elasticsearch
+# Same as /simulated_event
 @app.route('/reading', methods=['POST'])
 def reading():
   try:
@@ -132,6 +146,8 @@ def reading():
     print e
     return json.dumps({'ok' : False})
 
+# Look up points with this endpoint. Make sure that you send the following arguments in the request
+# EX: http://<the ip address or host>/events?minlat=10.0&maxlat=30.0&minlon=40.0&maxlon=70.0
 @app.route('/events', methods=['GET'])
 def events():
   try:
@@ -162,6 +178,9 @@ def events():
     print e
     return json.dumps({'ok' : False})
 
+# This is the same as the /events endpoint, except that it looks through all available indexes
+# this is probably no longer a viable endpoint because the data that was entered into the database previously
+# is no longer available. But it serves as an example for how to chain multiple es_lookup functions
 @app.route('/all', methods=['GET'])
 def all_data():
   try:
@@ -188,6 +207,8 @@ def all_data():
   except Exception, e:
     print e
     return json.dumps({'ok' : False})
+
+# the main function. This actually runs the Flask app
 if __name__ == '__main__':
   app.run(host='0.0.0.0')
 
